@@ -8,17 +8,39 @@ public class Main {
 
 		Scanner input = new Scanner(System.in);
 
-		System.out.print("Enter the total number of participants: ");
-		int totalParticipants = input.nextInt();
+		int totalParticipants = 0;
+		int numOfGroups = 0;
 
-		System.out.print("Enter the number of groups: ");
-		int numOfGroups = input.nextInt();
-		input.nextLine(); // clear buffer
+		// Validate number of participants
+		while (true) {
+			System.out.print("Enter the total number of participants: ");
+
+			if (input.hasNextInt()) {
+				totalParticipants = input.nextInt();
+				input.nextLine(); // clear buffer
+				break;
+			} else {
+				System.out.println("Invalid input! Please enter a number.");
+				input.nextLine(); // discard invalid input
+			}
+		}
+
+		// Validate number of groups
+		while (true) {
+			System.out.print("Enter the number of groups: ");
+
+			if (input.hasNextInt()) {
+				numOfGroups = input.nextInt();
+				input.nextLine(); // clear buffer
+				break;
+			} else {
+				System.out.println("Invalid input! Please enter a number.");
+				input.nextLine(); // discard invalid input
+			}
+		}
 
 		GroupManager manager = new GroupManager(totalParticipants, numOfGroups);
-
-		// Organizer sets up groups
-		manager.createGroups();
+		manager.createGroups(); // Organizer sets up groups
 
 		// Participant interaction
 		for (int i = 0; i < totalParticipants; i++) {
