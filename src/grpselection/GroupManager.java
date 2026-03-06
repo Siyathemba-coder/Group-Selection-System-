@@ -78,33 +78,44 @@ public class GroupManager {
 	}
 
 	// Participant interaction
-	public void selectGroup(Participant participant) {
+public void selectGroup(Participant participant) {
 
-		System.out.println("Available groups:");
+    System.out.println("Available groups:");
 
-		for (int i = 0; i < groups.size(); i++) {
-			System.out.println((i + 1) + ". " + groups.get(i).getGrpName());
-		}
+    for (int i = 0; i < groups.size(); i++) {
+        System.out.println((i + 1) + ". " + groups.get(i).getGrpName());
+    }
 
-		System.out.print("Select group: ");
-		int choice = sc.nextInt();
-		sc.nextLine(); // clear buffer
+    while (true) {
 
-		if (choice < 1 || choice > groups.size()) {
-			System.out.println("Invalid group selection.");
-			return;
-		}
+        System.out.print("Select group (number): ");
 
-		Group selectedGroup = groups.get(choice - 1);
+        if (sc.hasNextInt()) {
+            int choice = sc.nextInt();
+            sc.nextLine(); // clear buffer
 
-		if (selectedGroup.isFull()) {
-			System.out.println("Sorry, this group is already full. Choose another group.");
-		}
-		else {
-			selectedGroup.addMember(participant);
-			System.out.println(participant.getName() + " joined " + selectedGroup.getGrpName());
-		}
-	}
+            if (choice < 1 || choice > groups.size()) {
+                System.out.println("Invalid group selection. Try again.");
+                continue; 
+            }
+
+            Group selectedGroup = groups.get(choice - 1);
+
+            if (selectedGroup.isFull()) {
+                System.out.println("Sorry, this group is already full. Choose another group.");
+                continue;
+            }
+
+            selectedGroup.addMember(participant);
+            System.out.println(participant.getName() + " joined " + selectedGroup.getGrpName());
+            break; 
+
+        } else {
+            System.out.println("Invalid input! Please enter a number.");
+            sc.nextLine(); 
+        }
+    }
+}
 
 	// Handle extra participants
 	public void assignExtraParticipant(Participant participant) {
@@ -187,3 +198,4 @@ public class GroupManager {
 		}
 	}
 }
+
