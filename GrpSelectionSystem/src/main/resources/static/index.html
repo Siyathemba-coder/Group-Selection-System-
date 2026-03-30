@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Group Selection System</title>
+</head>
+<body>
+
+    <h1>Group Selection System</h1>
+
+    <!-- Setup -->
+    <h3>Setup</h3>
+    <input type="number" id="participants" placeholder="Total Participants">
+    <input type="number" id="groups" placeholder="Number of Groups">
+    <button onclick="setup()">Initialize</button>
+
+    <p id="setupResponse"></p>
+
+    <hr>
+
+    <!-- Create Groups -->
+    <h3>Create Groups</h3>
+    <div id="groupInputs"></div>
+    <button onclick="createGroupInputs()">Generate Group Fields</button>
+    <button onclick="submitGroups()">Submit Groups</button>
+
+    <p id="groupResponse"></p>
+
+    <hr>
+
+    <!-- Add Participant -->
+	<h3>Add Participant</h3>
+	<input type="text" id="name" placeholder="Enter name">
+
+	<select id="groupSelect"></select>
+
+	<button onclick="selectGroup()">Join Group</button>
+
+	<p id="response"></p>
+
+    <hr>
+
+    <!-- View Groups -->
+    <h3>Groups</h3>
+    <button onclick="loadGroups()">Load Groups</button>
+    <pre id="groupsOutput"></pre>
+
+    <script>
+        let groupCount = 0;
+
+        function setup() {
+            let total = document.getElementById("participants").value;
+            let groups = document.getElementById("groups").value;
+
+            groupCount = groups;
+
+            fetch(`http://localhost:8080/api/setup?totalParticipants=${total}&numOfGroups=${groups}`, {
+                method: "POST"
+            })
+            .then(res => res.text())
+            .then(data => document.getElementById("setupResponse").innerText = data);
+        }
+
+        // Generate input fields dynamically
+        function createGroupInputs() {
+            let container = document.getElementById("groupInputs");
+            container.innerHTML = "";
+
+            for (let i = 0; i < groupCount; i++) {
+                container.innerHTML += `
+                    <div>
+                        <h4>Group ${i + 1}</h4>
+                        <input type="text" placeholder="Group Name" id="gname${i}">
+                        <input type="text" placeholder="Leader Name" id="gleader${i}">
+                    </div>
+                `;
+            }
+        }
+
+        // Send groups to backend
+		function submitGroups() {
+		    let groups = [];
+
+		    for (let i = 0; i < groupCount; i++) {
+		        let name = document.getElementById(`gname${i}`).value;
+		        let leader = document.getElementById(`gleader${i}`).value;
+
+		        groups.push({
+		            groupName: name,
+		            leaderName: leader
+		        });
+		    }
+
+		    fetch("http://localhost:8080/api/groups", {
+		        method: "POST",
+		        headers: {
+		            "Content-Type": "application/json"
+		        },
+		        body: JSON.stringify(groups)
+		    })
+		    .then(res => res.text())
+		    .then(data => {
+		        document.getElementById("groupResponse").innerText = data;
+
+		        loadGroupsDropdown();
+		    });
+		}
+
+		function selectGroup() {
+		    let name = document.getElementById("name").value;
+		    let index = parseInt(document.getElementById("groupSelect").value);
+
+		    fetch(`http://localhost:8080/api/select?name=${name}&groupIndex=${index}`, {
+		        method: "POST"
+		    })
+		    .then(res => res.text())
+		    .then(data => document.getElementById("response").innerText = data);
+		}
+		
+		function loadGroupsDropdown() {
+		    fetch("http://localhost:8080/api/groups")
+		    .then(res => res.json())
+		    .then(data => {
+		        let select = document.getElementById("groupSelect");
+		        select.innerHTML = "";
+
+		        data.forEach((group, index) => {
+		            let option = document.createElement("option");
+		            option.value = index;
+		            option.text = group.groupName + " (Leader: " + group.leaderName + ")";
+		            select.appendChild(option);
+		        });
+		    });
+			if (group.members.length >= group.maxMembers) {
+			    option.disabled = true;
+			    option.text += " (FULL)";
+			}
+		}
+    </script>
+
+</body>
+</html>
