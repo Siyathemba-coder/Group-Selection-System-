@@ -15,6 +15,13 @@ public class GroupController {
     public String setup(@RequestParam int totalParticipants,
                         @RequestParam int numOfGroups) {
 
+        if (totalParticipants <= 0 || numOfGroups <= 0) {
+            return "Error: Participants and groups must be greater than 0.";
+        }
+        if (numOfGroups > totalParticipants) {
+            return "Error: Number of groups cannot exceed number of participants.";
+        }
+
         manager = new GroupManager(totalParticipants, numOfGroups);
         return "System initialized successfully";
     }
@@ -27,47 +34,55 @@ public class GroupController {
             return "System not initialized. Call /setup first.";
         }
 
+        for (Group g : groups) {
+            System.out.println("Group: " + g.getGroupName() + ", Leader: " + g.getLeaderName());
+        }
+
         return manager.createGroups(groups);
     }
 
-    // Step 3: Get all groups (for display)
+    // Step 3: Get all groups
     @GetMapping("/groups")
     public ArrayList<Group> getGroups() {
-
-        if (manager == null) {
-            return new ArrayList<>();
-        }
-
+        if (manager == null) return new ArrayList<>();
         return manager.getGroups();
     }
 
-    // Step 4: Add participant to selected group
+    // Step 4: Add participant — try chosen group first, auto-assign if full
     @PostMapping("/select")
     public String selectGroup(@RequestParam String name,
                               @RequestParam int groupIndex) {
 
-        if (manager == null) {
-            return "System not initialized.";
+        if (manager == null) return "System not initialized.";
+
+        if (name == null || name.trim().isEmpty()) {
+            return "Participant name cannot be empty.";
         }
 
         if (manager.participantExists(name)) {
             return "Participant name already exists.";
         }
 
-        Participant p = new Participant(name);
-
-        if (!manager.allGroupsFull()) {
-            return manager.selectGroup(p, groupIndex);
-        } else {
-            Group assigned = manager.assignExtraParticipant(p);
-
-            if (assigned != null) {
-                return name + " auto-assigned to " + assigned.getGrpName();
-            } else {
-                return "All groups are full.";
-            }
+        if (manager.allGroupsFull()) {
+            return "All groups are full.";
         }
+
+        Participant p = new Participant(name.trim());
+        Group selectedGroup = manager.getGroups().get(groupIndex);
+
+        if (!selectedGroup.isFull()) {
+            return manager.selectGroup(p, groupIndex);
+        }
+
+        // Selected group is full — auto-assign to closest available group
+        Group assigned = manager.assignExtraParticipant(p);
+        if (assigned != null) {
+            return name + "'s chosen group was full. Auto-assigned to " + assigned.getGroupName();
+        }
+
+        return "All groups are full.";
     }
+
     @GetMapping("/test")
     public String test() {
         return "Backend is working!";
