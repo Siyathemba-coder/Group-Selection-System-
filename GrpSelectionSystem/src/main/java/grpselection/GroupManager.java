@@ -7,6 +7,7 @@ public class GroupManager {
     private int totalParticipants;
     private int numOfGroups;
     private int maxPerGroup;
+    private int remainder;
     private ArrayList<Group> groups;
 
     public GroupManager(int totalParticipants, int numOfGroups) {
@@ -14,23 +15,25 @@ public class GroupManager {
         this.numOfGroups = numOfGroups;
         this.groups = new ArrayList<>();
         this.maxPerGroup = totalParticipants / numOfGroups;
+        this.remainder = totalParticipants % numOfGroups;
     }
 
-    // Create groups from fron-tend input
+    // Create groups from front-end input
     public String createGroups(ArrayList<Group> newGroups) {
 
-        // Validate unique names
         for (int i = 0; i < newGroups.size(); i++) {
             for (int j = i + 1; j < newGroups.size(); j++) {
-                if (newGroups.get(i).getGrpName()
-                        .equalsIgnoreCase(newGroups.get(j).getGrpName())) {
+                if (newGroups.get(i).getGroupName()
+                        .equalsIgnoreCase(newGroups.get(j).getGroupName())) {
                     return "Duplicate group names are not allowed.";
                 }
             }
         }
 
-        for (Group g : newGroups) {
-            g.setMaxMembers(this.maxPerGroup);
+        // Distribute remainder slots — first `remainder` groups get one extra seat
+        for (int i = 0; i < newGroups.size(); i++) {
+            int extra = (i < remainder) ? 1 : 0;
+            newGroups.get(i).setMaxMembers(this.maxPerGroup + extra);
         }
 
         this.groups = newGroups;
@@ -47,35 +50,28 @@ public class GroupManager {
         Group selectedGroup = groups.get(groupIndex);
 
         if (selectedGroup.isFull()) {
-            return "Group is already full.";
+            return "That group is full. Please choose another group.";
         }
 
         selectedGroup.addMember(participant);
-        return participant.getName() + " joined " + selectedGroup.getGrpName();
+        return participant.getName() + " joined " + selectedGroup.getGroupName();
     }
 
-    //  Auto-assign extra participants
+    // Auto-assign by closest leader name initial
     public Group assignExtraParticipant(Participant participant) {
 
         if (allGroupsFull()) {
             return null;
         }
 
-        char participantChar = Character.toLowerCase(
-                participant.getName().charAt(0));
-
+        char participantChar = Character.toLowerCase(participant.getName().charAt(0));
         int smallestDifference = Integer.MAX_VALUE;
         Group closestGroup = null;
 
         for (Group g : groups) {
+            if (g.isFull()) continue;
 
-            if (g.isFull()) {
-                continue;
-            }
-
-            char leaderChar = Character.toLowerCase(
-                    g.getLeaderName().charAt(0));
-
+            char leaderChar = Character.toLowerCase(g.getLeaderName().charAt(0));
             int difference = Math.abs(participantChar - leaderChar);
 
             if (difference < smallestDifference) {
@@ -91,9 +87,8 @@ public class GroupManager {
         return closestGroup;
     }
 
-    // Check if participant exists
+    // Check if participant already exists across all groups
     public boolean participantExists(String name) {
-
         for (Group g : groups) {
             for (Participant p : g.getMembers()) {
                 if (p.getName().equalsIgnoreCase(name)) {
@@ -101,32 +96,19 @@ public class GroupManager {
                 }
             }
         }
-
         return false;
     }
 
     // Check if all groups are full
     public boolean allGroupsFull() {
-
         for (Group g : groups) {
-            if (!g.isFull()) {
-                return false;
-            }
+            if (!g.isFull()) return false;
         }
-
         return true;
     }
 
-    // Return groups (for front-end display)
-    public ArrayList<Group> getGroups() {
-        return groups;
-    }
-
-    public void setGroups(ArrayList<Group> groups) {
-        this.groups = groups;
-    }
-
-    public int getMaxPerGroup() {
-        return maxPerGroup;
-    }
-}
+    public ArrayList<Group> getGroups() { return groups; }
+    public void setGroups(ArrayList<Group> groups) { this.groups = groups; }
+    public int getMaxPerGroup() { return maxPerGroup; }
+    public int getTotalParticipants() { return totalParticipants; }
+    public int getNumOfGroups() { return numOfGroups; }
