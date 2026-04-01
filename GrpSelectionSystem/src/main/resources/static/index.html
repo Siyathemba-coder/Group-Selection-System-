@@ -1,141 +1,506 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Group Selection System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e0e10;
+            --surface: #18181c;
+            --border: #2a2a32;
+            --accent: #c8f135;
+            --accent-dim: #a0c020;
+            --text: #f0f0f0;
+            --muted: #888;
+            --danger: #ff5f5f;
+            --radius: 10px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--accent);
+        }
+
+        header p {
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+            font-size: 0.85rem;
+            margin-top: 6px;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .step-badge {
+            background: var(--accent);
+            color: #0e0e10;
+            font-weight: 700;
+            font-size: 0.75rem;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 0.9rem;
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            outline: none;
+            transition: border-color 0.2s;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        select option:disabled {
+            color: var(--danger);
+        }
+
+        button {
+            background: var(--accent);
+            color: #0e0e10;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 0.88rem;
+            border: none;
+            border-radius: var(--radius);
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        button:hover { background: var(--accent-dim); }
+        button:active { transform: scale(0.97); }
+
+        button.secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        button.secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .response {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.85rem;
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            border-left: 3px solid var(--accent);
+            background: rgba(200, 241, 53, 0.05);
+            color: var(--accent);
+            display: none;
+        }
+
+        .response.error {
+            border-color: var(--danger);
+            background: rgba(255, 95, 95, 0.05);
+            color: var(--danger);
+        }
+
+        .response.visible { display: block; }
+
+        #groupInputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .group-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .group-row label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--muted);
+            min-width: 60px;
+        }
+
+        #groupsGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        .group-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .group-card h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .group-card .leader {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .group-card .slots {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .slots-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .slots-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        .member-list {
+            list-style: none;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--text);
+        }
+
+        .member-list li::before {
+            content: '→ ';
+            color: var(--accent);
+        }
+
+        .full-badge {
+            display: inline-block;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+    </style>
 </head>
 <body>
 
-    <h1>Group Selection System</h1>
+<header>
+    <h1>Group Selection</h1>
+    <p>Organize participants into groups efficiently</p>
+</header>
 
-    <!-- Setup -->
-    <h3>Setup</h3>
-    <input type="number" id="participants" placeholder="Total Participants">
-    <input type="number" id="groups" placeholder="Number of Groups">
-    <button onclick="setup()">Initialize</button>
+<div class="container">
 
-    <p id="setupResponse"></p>
+    <!-- Step 1: Setup -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-badge">1</div>
+            <h3>Setup</h3>
+        </div>
+        <div class="row">
+            <input type="number" id="participants" placeholder="Total Participants" min="1">
+            <input type="number" id="groups" placeholder="Number of Groups" min="1">
+            <button onclick="setup()">Initialize</button>
+        </div>
+        <div class="response" id="setupResponse"></div>
+    </div>
 
-    <hr>
+    <!-- Step 2: Create Groups -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-badge">2</div>
+            <h3>Create Groups</h3>
+        </div>
+        <button class="secondary" onclick="createGroupInputs()" style="margin-bottom: 16px;">Generate Group Fields</button>
+        <div id="groupInputs"></div>
+        <button onclick="submitGroups()">Submit Groups</button>
+        <div class="response" id="groupResponse"></div>
+    </div>
 
-    <!-- Create Groups -->
-    <h3>Create Groups</h3>
-    <div id="groupInputs"></div>
-    <button onclick="createGroupInputs()">Generate Group Fields</button>
-    <button onclick="submitGroups()">Submit Groups</button>
+    <!-- Step 3: Join a Group -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-badge">3</div>
+            <h3>Join a Group</h3>
+        </div>
+        <div class="row">
+            <input type="text" id="name" placeholder="Enter your name">
+            <select id="groupSelect">
+                <option value="">— select a group —</option>
+            </select>
+            <button onclick="selectGroup()">Join Group</button>
+        </div>
+        <div class="response" id="joinResponse"></div>
+    </div>
 
-    <p id="groupResponse"></p>
+    <!-- Step 4: View Groups -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-badge">4</div>
+            <h3>View Groups</h3>
+        </div>
+        <button class="secondary" onclick="loadGroups()">Refresh Groups</button>
+        <div id="groupsGrid"></div>
+    </div>
 
-    <hr>
+</div>
 
-    <!-- Add Participant -->
-	<h3>Add Participant</h3>
-	<input type="text" id="name" placeholder="Enter name">
+<script>
+    let groupCount = 0;
 
-	<select id="groupSelect"></select>
+    function showResponse(id, message, isError = false) {
+        const el = document.getElementById(id);
+        el.textContent = message;
+        el.className = 'response visible' + (isError ? ' error' : '');
+    }
 
-	<button onclick="selectGroup()">Join Group</button>
+    function setup() {
+        const total = parseInt(document.getElementById("participants").value);
+        const groups = parseInt(document.getElementById("groups").value);
 
-	<p id="response"></p>
-
-    <hr>
-
-    <!-- View Groups -->
-    <h3>Groups</h3>
-    <button onclick="loadGroups()">Load Groups</button>
-    <pre id="groupsOutput"></pre>
-
-    <script>
-        let groupCount = 0;
-
-        function setup() {
-            let total = document.getElementById("participants").value;
-            let groups = document.getElementById("groups").value;
-
-            groupCount = groups;
-
-            fetch(`http://localhost:8080/api/setup?totalParticipants=${total}&numOfGroups=${groups}`, {
-                method: "POST"
-            })
-            .then(res => res.text())
-            .then(data => document.getElementById("setupResponse").innerText = data);
+        if (!total || !groups || total <= 0 || groups <= 0) {
+            showResponse("setupResponse", "Please enter valid positive numbers.", true);
+            return;
+        }
+        if (groups > total) {
+            showResponse("setupResponse", "Number of groups cannot exceed number of participants.", true);
+            return;
         }
 
-        // Generate input fields dynamically
-        function createGroupInputs() {
-            let container = document.getElementById("groupInputs");
-            container.innerHTML = "";
+        groupCount = groups;
 
-            for (let i = 0; i < groupCount; i++) {
-                container.innerHTML += `
-                    <div>
-                        <h4>Group ${i + 1}</h4>
-                        <input type="text" placeholder="Group Name" id="gname${i}">
-                        <input type="text" placeholder="Leader Name" id="gleader${i}">
+        fetch(`http://localhost:8080/api/setup?totalParticipants=${total}&numOfGroups=${groups}`, {
+            method: "POST"
+        })
+        .then(res => res.text())
+        .then(data => showResponse("setupResponse", data))
+        .catch(() => showResponse("setupResponse", "Could not reach the server.", true));
+    }
+
+    function createGroupInputs() {
+        if (groupCount <= 0) {
+            alert("Please complete Setup first.");
+            return;
+        }
+
+        const container = document.getElementById("groupInputs");
+        container.innerHTML = "";
+
+        for (let i = 0; i < groupCount; i++) {
+            container.innerHTML += `
+                <div class="group-row">
+                    <label>Group ${i + 1}</label>
+                    <input type="text" placeholder="Group Name" id="gname${i}">
+                    <input type="text" placeholder="Leader Name" id="gleader${i}">
+                </div>
+            `;
+        }
+    }
+
+	function submitGroups() {
+	    const groups = [];
+	    const total = parseInt(document.getElementById("participants").value);
+
+	    for (let i = 0; i < groupCount; i++) {
+	        const nameEl = document.getElementById(`gname${i}`);
+	        const leaderEl = document.getElementById(`gleader${i}`);
+
+	        if (!nameEl || !leaderEl) {
+	            showResponse("groupResponse", "Please generate group fields first.", true);
+	            return;
+	        }
+
+	        const name = nameEl.value.trim();
+	        const leader = leaderEl.value.trim();
+
+	        if (!name || !leader) {
+	            showResponse("groupResponse", `Group ${i + 1} is missing a name or leader.`, true);
+	            return;
+	        }
+
+	        // Calculate maxMembers here so the backend has a non-zero starting value
+	        const base = Math.floor(total / groupCount);
+	        const extra = i < (total % groupCount) ? 1 : 0;
+
+	        groups.push({ groupName: name, leaderName: leader, maxMembers: base + extra });
+	    }
+
+	    fetch("http://localhost:8080/api/groups", {
+	        method: "POST",
+	        headers: { "Content-Type": "application/json" },
+	        body: JSON.stringify(groups)
+	    })
+	    .then(res => res.text())
+	    .then(data => {
+	        showResponse("groupResponse", data);
+	        loadGroupsDropdown();
+	        loadGroups();
+	    })
+	    .catch(() => showResponse("groupResponse", "Could not reach the server.", true));
+	}
+
+    function selectGroup() {
+        const name = document.getElementById("name").value.trim();
+        const index = parseInt(document.getElementById("groupSelect").value);
+
+        if (!name) {
+            showResponse("joinResponse", "Please enter your name.", true);
+            return;
+        }
+        if (isNaN(index)) {
+            showResponse("joinResponse", "Please select a group.", true);
+            return;
+        }
+
+        fetch(`http://localhost:8080/api/select?name=${encodeURIComponent(name)}&groupIndex=${index}`, {
+            method: "POST"
+        })
+        .then(res => res.text())
+        .then(data => {
+            showResponse("joinResponse", data);
+            document.getElementById("name").value = "";
+            loadGroupsDropdown();
+            loadGroups();
+        })
+        .catch(() => showResponse("joinResponse", "Could not reach the server.", true));
+    }
+
+    function loadGroupsDropdown() {
+        fetch("http://localhost:8080/api/groups")
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById("groupSelect");
+            select.innerHTML = '<option value="">— select a group —</option>';
+
+            data.forEach((group, index) => {
+                const option = document.createElement("option");
+                option.value = index;
+                const isFull = group.members.length >= group.maxMembers;
+                option.text = group.groupName + " — " + group.leaderName + (isFull ? " (FULL)" : "");
+                option.disabled = isFull;
+                select.appendChild(option);
+            });
+        })
+        .catch(() => {});
+    }
+
+    function loadGroups() {
+        fetch("http://localhost:8080/api/groups")
+        .then(res => res.json())
+        .then(data => {
+            const grid = document.getElementById("groupsGrid");
+
+            if (!data.length) {
+                grid.innerHTML = '<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.85rem;margin-top:14px;">No groups yet.</p>';
+                return;
+            }
+
+            grid.innerHTML = data.map(group => {
+                const count = group.members.length;
+                const max = group.maxMembers;
+                const pct = max > 0 ? (count / max) * 100 : 0;
+                const isFull = count >= max;
+
+                const memberItems = group.members.length
+                    ? group.members.map(m => `<li>${m.name}</li>`).join("")
+                    : `<li style="color:var(--muted)">No members yet</li>`;
+
+                return `
+                    <div class="group-card">
+                        <h4>${group.groupName}${isFull ? '<span class="full-badge">FULL</span>' : ''}</h4>
+                        <div class="leader">Leader: ${group.leaderName}</div>
+                        <div class="slots">${count} / ${max} members</div>
+                        <div class="slots-bar">
+                            <div class="slots-fill" style="width: ${pct}%"></div>
+                        </div>
+                        <ul class="member-list">${memberItems}</ul>
                     </div>
                 `;
-            }
-        }
-
-        // Send groups to backend
-		function submitGroups() {
-		    let groups = [];
-
-		    for (let i = 0; i < groupCount; i++) {
-		        let name = document.getElementById(`gname${i}`).value;
-		        let leader = document.getElementById(`gleader${i}`).value;
-
-		        groups.push({
-		            groupName: name,
-		            leaderName: leader
-		        });
-		    }
-
-		    fetch("http://localhost:8080/api/groups", {
-		        method: "POST",
-		        headers: {
-		            "Content-Type": "application/json"
-		        },
-		        body: JSON.stringify(groups)
-		    })
-		    .then(res => res.text())
-		    .then(data => {
-		        document.getElementById("groupResponse").innerText = data;
-
-		        loadGroupsDropdown();
-		    });
-		}
-
-		function selectGroup() {
-		    let name = document.getElementById("name").value;
-		    let index = parseInt(document.getElementById("groupSelect").value);
-
-		    fetch(`http://localhost:8080/api/select?name=${name}&groupIndex=${index}`, {
-		        method: "POST"
-		    })
-		    .then(res => res.text())
-		    .then(data => document.getElementById("response").innerText = data);
-		}
-		
-		function loadGroupsDropdown() {
-		    fetch("http://localhost:8080/api/groups")
-		    .then(res => res.json())
-		    .then(data => {
-		        let select = document.getElementById("groupSelect");
-		        select.innerHTML = "";
-
-		        data.forEach((group, index) => {
-		            let option = document.createElement("option");
-		            option.value = index;
-		            option.text = group.groupName + " (Leader: " + group.leaderName + ")";
-		            select.appendChild(option);
-		        });
-		    });
-			if (group.members.length >= group.maxMembers) {
-			    option.disabled = true;
-			    option.text += " (FULL)";
-			}
-		}
-    </script>
+            }).join("");
+        })
+        .catch(() => {});
+    }
+</script>
 
 </body>
 </html>
