@@ -1,6 +1,10 @@
 package grpselection;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Participant {
+	
+	@JsonProperty("name")
 	private String name;
 	private Group group; // reference to the Group this participant belongs to
 
