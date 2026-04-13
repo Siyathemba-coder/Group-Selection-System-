@@ -49,6 +49,9 @@ public class GroupController {
         if (manager.allGroupsFull()) return "All groups are full.";
 
         Participant p = new Participant(name.trim());
+        if (groupIndex < 0 || groupIndex >= manager.getGroups().size()) {
+            return "Invalid group selection.";
+        }
         Group selectedGroup = manager.getGroups().get(groupIndex);
         if (!selectedGroup.isFull()) return manager.selectGroup(p, groupIndex);
 
