@@ -23,6 +23,10 @@ public class GroupManager {
     public String createGroups(ArrayList<Group> newGroups) {
         for (int i = 0; i < newGroups.size(); i++) {
             for (int j = i + 1; j < newGroups.size(); j++) {
+            	if (newGroups.get(i).getGroupName().trim().isEmpty() ||
+            		    newGroups.get(i).getLeaderName().trim().isEmpty()) {
+            		    return "Group name and leader name cannot be empty.";
+            		}
                 if (newGroups.get(i).getGroupName()
                         .equalsIgnoreCase(newGroups.get(j).getGroupName())) {
                     return "Duplicate group names are not allowed.";
@@ -51,9 +55,13 @@ public class GroupManager {
     public String leaveGroup(String name) {
         if (isLocked()) return "Group selection is locked.";
         for (Group g : groups) {
-            for (Participant p : g.getMembers()) {
+            ArrayList<Participant> members = g.getMembers();
+
+            for (int i = 0; i < members.size(); i++) {
+                Participant p = members.get(i);
+
                 if (p.getName().equalsIgnoreCase(name)) {
-                    g.getMembers().remove(p);
+                    members.remove(i);
                     p.setGroup(null);
                     return name + " has left " + g.getGroupName();
                 }
@@ -64,15 +72,19 @@ public class GroupManager {
 
     // Admin removes a participant from a group
     public String removeParticipant(String name) {
-        for (Group g : groups) {
-            for (Participant p : g.getMembers()) {
-                if (p.getName().equalsIgnoreCase(name)) {
-                    g.getMembers().remove(p);
-                    p.setGroup(null);
-                    return name + " has been removed from " + g.getGroupName();
-                }
-            }
-        }
+    	for (Group g : groups) {
+    	    ArrayList<Participant> members = g.getMembers();
+
+    	    for (int i = 0; i < members.size(); i++) {
+    	        Participant p = members.get(i);
+
+    	        if (p.getName().equalsIgnoreCase(name)) {
+    	            members.remove(i);
+    	            p.setGroup(null);
+    	            return name + " has left " + g.getGroupName();
+    	        }
+    	    }
+    	}
         return "Participant not found.";
     }
 
